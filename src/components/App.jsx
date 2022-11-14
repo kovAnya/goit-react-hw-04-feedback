@@ -1,56 +1,58 @@
-import React from 'react';
+import { useState } from 'react';
 import { Section } from './section/Section';
 import { FeedbackOptions } from './feedback/FeedbackOptions';
 import { Statistics } from './statistics/Statistics';
 import { Notification } from './notification/Notification';
 
-export class App extends React.Component {
-  state = {
-    good: 0,
-    neutral: 0,
-    bad: 0,
+export const App = () => {
+  const [good, setGood] = useState(0);
+  const [neutral, setNeutral] = useState(0);
+  const [bad, setBad] = useState(0);
+
+  const onLeaveFeedback = evt => {
+    switch (evt.target.name) {
+      case 'good':
+        setGood(prevState => prevState + 1);
+        break;
+      case 'neutral':
+        setNeutral(prevState => prevState + 1);
+        break;
+      case 'bad':
+        setBad(prevState => prevState + 1);
+        break;
+
+      default:
+        return;
+    }
   };
 
-  onLeaveFeedback = evt => {
-    this.setState(prevState => ({
-      [evt.target.name]: prevState[evt.target.name] + 1,
-    }));
-  };
-
-  countTotalFeedback = () => {
-    const { good, neutral, bad } = this.state;
+  const countTotalFeedback = () => {
     return good + neutral + bad;
   };
 
-  countPositiveFeedbackPercentage = () => {
-    const { good } = this.state;
-    return ((good * 100) / this.countTotalFeedback()).toFixed(0);
+  const countPositiveFeedbackPercentage = () => {
+    return ((good * 100) / countTotalFeedback()).toFixed(0);
   };
 
-  render() {
-    const { good, neutral, bad } = this.state;
-    const total = this.countTotalFeedback();
-    const percentage = this.countPositiveFeedbackPercentage();
+  const total = countTotalFeedback();
+  return (
+    <Section>
+      <FeedbackOptions
+        options={['good', 'neutral', 'bad']}
+        onLeaveFeedback={onLeaveFeedback}
+      ></FeedbackOptions>
 
-    return (
-      <Section>
-        <FeedbackOptions
-          options={Object.keys(this.state)}
-          onLeaveFeedback={this.onLeaveFeedback}
-        ></FeedbackOptions>
-
-        {total > 0 ? (
-          <Statistics
-            good={good}
-            neutral={neutral}
-            bad={bad}
-            total={total}
-            positivePercentage={percentage}
-          ></Statistics>
-        ) : (
-          <Notification message="There is no feedback"></Notification>
-        )}
-      </Section>
-    );
-  }
-}
+      {total > 0 ? (
+        <Statistics
+          good={good}
+          neutral={neutral}
+          bad={bad}
+          total={total}
+          positivePercentage={countPositiveFeedbackPercentage()}
+        ></Statistics>
+      ) : (
+        <Notification message="There is no feedback"></Notification>
+      )}
+    </Section>
+  );
+};
